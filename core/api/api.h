@@ -723,6 +723,21 @@ namespace pxar {
 
   }; //class DUT
 
+#ifdef XDRESS
+  // UGLY workaround for xdress, the cython interface generator: see https://groups.google.com/forum/#!topic/xdress/x2jTx2F_uRg
+  std::vector<std::pair<std::string,uint8_t> > dummy1;
+  std::vector<std::pair<std::string,double> > dummy2;
+  std::vector<std::pair<uint16_t, uint8_t> > dummy3;
+  std::vector<std::vector<std::pair<std::string,uint8_t> > > dummy4;
+  std::vector<std::vector<pixelConfig> > dummy5;
+  std::vector< std::pair<uint8_t, std::pair<uint8_t, std::vector<pixel> > > >  dummy6;
+  std::vector<pixel> dummy7;
+  std::vector< std::pair<uint8_t, std::vector<pixel> > > dummy8;
+  std::vector<std::pair<uint8_t,uint8_t> > dummy9;
+  std::vector<uint16_t> dummy10;
+#endif
+
+
 } //namespace pxar
 
 #endif /* PXAR_API_H */
