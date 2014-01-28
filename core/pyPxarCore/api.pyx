@@ -963,7 +963,7 @@ cdef class dut:
         cdef np.npy_intp rtnval_proxy_shape[1]
         rtnval = (<c_api.dut *> self._inst).getDACs(<unsigned long long> rocId)
         rtnval_proxy_shape[0] = <np.npy_intp> rtnval.size()
-        rtnval_proxy = np.PyArray_SimpleNewFromData(1, rtnval_proxy_shape, np.NPY_OBJECT, &rtnval[0])
+        rtnval_proxy = np.PyArray_SimpleNewFromData(1, rtnval_proxy_shape, stlcontainers.xd_pair_uchar_uchar.num, &rtnval[0])
         return rtnval_proxy
     
     

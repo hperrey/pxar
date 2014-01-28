@@ -14,17 +14,18 @@ sourcedir = 'api'      # location of C/C++ source
 # For example, this allows the wrapping of vector< vector<int> >
 # as an np.array(..., dtype=xd_vector_int).
 stlcontainers = [
+    ('vector', 'uint16'),
     ('vector', 'pixelConfig'),
     ('vector', 'rocConfig'),
     ('vector', 'tbmConfig'),
     ('vector', ('vector', 'pixel') ),
     ('vector', ('vector', 'pixelConfig') ),
-    ('vector', ('vector', ('pair', 'str','uint8_t'))),
-    ('vector', ('pair', 'uint8_t','uint8_t')),
-    ('vector', ('pair', 'uint16_t','uint8_t')),
-    ('vector', ('pair', 'uint8_t',('vector','pixel'))),
-    ('vector', ('pair', 'uint8_t',('pair','uint8_t', ('vector','pixel')))),
-    ('vector', ('pair', 'str','uint8_t')),
+    ('vector', ('vector', ('pair', 'str','uchar'))),
+    ('vector', ('pair', 'uchar','uchar')),
+    ('vector', ('pair', 'Uint16','uchar')),
+    ('vector', ('pair', 'uchar',('vector','pixel'))),
+    ('vector', ('pair', 'uchar',('pair','uchar', ('vector','pixel')))),
+    ('vector', ('pair', 'str','uchar')),
     ('vector', ('pair', 'str','double'))
     ]
 
@@ -61,6 +62,8 @@ classes = [
     ('rocConfig', 'api'),
     ('tbmConfig', 'api'),
     ]
+
+functions = []
 
 # List of functions to wrap
 #functions = [
