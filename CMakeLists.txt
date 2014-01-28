@@ -36,9 +36,9 @@ INCLUDE_DIRECTORIES("${CMAKE_CURRENT_BINARY_DIR}")
 include( Platform.cmake)
 
 # Set the correct build type and allow command line options:
-IF(!CMAKE_BUILD_TYPE)
+IF(NOT DEFINED ${CMAKE_BUILD_TYPE})
   SET(CMAKE_BUILD_TYPE Relwithdebinfo)
-ENDIF(!CMAKE_BUILD_TYPE)
+ENDIF(NOT DEFINED ${CMAKE_BUILD_TYPE})
 
 SET(INSTALL_PREFIX "${PROJECT_SOURCE_DIR}" CACHE PATH "Prefix prepended to install directories")
 SET(CMAKE_INSTALL_PREFIX "${INSTALL_PREFIX}" CACHE INTERNAL "Prefix prepended to install directories" FORCE)
