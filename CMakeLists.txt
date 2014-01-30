@@ -11,6 +11,9 @@ PROJECT( pxar )
 # UPDATE THIS BEFORE RELEASING A SOURCE CODE TARBALL!
 SET(PXAR_VERSION "0.2.9")
 
+# Additional packages to be searched for by cmake
+LIST( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake )
+
 # Check if this is a source tarball build
 IF(NOT IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
   SET(SOURCE_PACKAGE 1)
@@ -33,19 +36,15 @@ ENDIF(NOT SOURCE_PACKAGE)
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.cmake.h" "${CMAKE_CURRENT_BINARY_DIR}/config.h" @ONLY)
 INCLUDE_DIRECTORIES("${CMAKE_CURRENT_BINARY_DIR}")
 
-SET(GCC_COMPILE_FLAGS "-Wall -Wextra -g -Wno-deprecated -pedantic -Wno-long-long")
-SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COMPILE_FLAGS}" )
-
-SET(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -fno-inline -fdiagnostics-show-option -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wmissing-include-dirs -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wsign-promo -Wstrict-null-sentinel -Wswitch-default -Wundef" CACHE STRING "Debug options." FORCE )
-SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g -Wall"  CACHE STRING "Relwithdebinfo options." FORCE )
-
 # Set the correct build type and allow command line options:
-IF(!CMAKE_BUILD_TYPE)
+IF(NOT DEFINED ${CMAKE_BUILD_TYPE})
   SET(CMAKE_BUILD_TYPE Relwithdebinfo)
-ENDIF(!CMAKE_BUILD_TYPE)
+ENDIF(NOT DEFINED ${CMAKE_BUILD_TYPE})
 
 SET(INSTALL_PREFIX "${PROJECT_SOURCE_DIR}" CACHE PATH "Prefix prepended to install directories")
 SET(CMAKE_INSTALL_PREFIX "${INSTALL_PREFIX}" CACHE INTERNAL "Prefix prepended to install directories" FORCE)
+
+include( cmake/Platform.cmake)
 
 # Build options and their defaults:
 OPTION(USE_FTD2XX "Use the proprietary FTDI library instead of the open source version" ON)
@@ -54,13 +53,6 @@ OPTION(USE_FTD2XX "Use the proprietary FTDI library instead of the open source v
 #######################################
 # Check prerequisities for pXar build #
 #######################################
-
-# Additional packages to be searched for by cmake
-LIST( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake )
-
-# Check for libusb-1.0 package:
-FIND_PACKAGE(libusb-1.0 REQUIRED)
-INCLUDE_DIRECTORIES(SYSTEM ${LIBUSB_1_INCLUDE_DIRS})
 
 # Include packages for threading:
 FIND_PACKAGE(Threads)
@@ -75,7 +67,7 @@ SET(FTDI_LINK_LIBRARY "")
 
 IF(NOT FTDI_FOUND AND NOT FTD2XX_FOUND)
   # We have none of the two options available, this doesn't work!
-  MESSAGE(FATAL_ERROR "No FTDI library found. Provide either libftdi or libftd2xx!")
+  MESSAGE(FATAL_ERROR "No FTDI library found. Provide either libftdi or libftd2xx! Please refer to the documentation for detailed instructions.")
 ELSE(NOT FTDI_FOUND AND NOT FTD2XX_FOUND)
   # One of the options is available, let's figure out which one to use!
   IF(USE_FTD2XX AND FTD2XX_FOUND)
@@ -111,6 +103,11 @@ ELSE(NOT FTDI_FOUND AND NOT FTD2XX_FOUND)
   ENDIF(NOT USE_FTD2XX AND NOT FTDI_FOUND)
 ENDIF(NOT FTDI_FOUND AND NOT FTD2XX_FOUND)
 
+# Check for libusb-1.0 package (not required on Windows w/ FTD2XX library):
+IF(NOT WIN32 OR NOT FTD2XX_FOUND)
+  FIND_PACKAGE(libusb-1.0 REQUIRED)
+  INCLUDE_DIRECTORIES(SYSTEM ${LIBUSB_1_INCLUDE_DIRS})
+ENDIF(NOT WIN32 OR NOT FTD2XX_FOUND)
 
 # Find Python libraries
 #FIND_PACKAGE(PythonLibs)
@@ -206,11 +203,16 @@ ENDIF(DOXYGEN_FOUND)
 # The code resides here:
 # https://github.com/kmorel/UseLATEX
 
-#ul: avoid unconditional cmake if no LaTeX is installed
-#INCLUDE(cmake/UseLATEX.cmake)
-#ADD_LATEX_DOCUMENT(doc/usermanual/pxar-manual.tex
-#  NO_DEFAULT
-#  )
+FIND_PACKAGE(LATEX)
+IF(LATEX_COMPILER)
+  MESSAGE(STATUS "Found LaTeX compiler.")
+  INCLUDE(cmake/UseLATEX.cmake)
+  ADD_LATEX_DOCUMENT(doc/usermanual/pxar-manual.tex
+    NO_DEFAULT
+    )
+ELSE(LATEX_COMPILER)
+  MESSAGE(STATUS "No LaTeX found, cannot compile user manual.")
+ENDIF(LATEX_COMPILER)
 
 #######################################################
 # Print out system information useful for bug reports #

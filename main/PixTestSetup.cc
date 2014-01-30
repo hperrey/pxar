@@ -15,33 +15,35 @@ ClassImp(PixTestSetup)
 PixTestSetup::PixTestSetup(PixSetup *a, std::string name) : PixTest(a, name), fParNtrig(-1), fParVcal(-1) {
   PixTest::init(a, name);
   init(); 
-  LOG(logINFO) << "PixTestSetup ctor(PixSetup &a, string, TGTab *)";
+  LOG(logDEBUG) << "PixTestSetup ctor(PixSetup &a, string, TGTab *)";
 }
 
 
 //----------------------------------------------------------
 PixTestSetup::PixTestSetup() : PixTest() {
-  LOG(logINFO) << "PixTestSetup ctor()";
+  LOG(logDEBUG) << "PixTestSetup ctor()";
 }
 
 // ----------------------------------------------------------------------
 bool PixTestSetup::setParameter(string parName, string sval) {
   bool found(false);
   for (map<string,string>::iterator imap = fParameters.begin(); imap != fParameters.end(); ++imap) {
-    LOG(logINFO) << "---> " << imap->first;
+    LOG(logDEBUG) << "---> " << imap->first;
     if (0 == imap->first.compare(parName)) {
       found = true; 
 
       fParameters[parName] = sval;
-      LOG(logINFO) << "  ==> parName: " << parName;
-      LOG(logINFO) << "  ==> sval:    " << sval;
+      LOG(logDEBUG) << "  ==> parName: " << parName;
+      LOG(logDEBUG) << "  ==> sval:    " << sval;
       if (!parName.compare("Ntrig")) {
 	fParNtrig = atoi(sval.c_str()); 
-	LOG(logINFO) << "  ==> setting fParNtrig to " << fParNtrig; 
+	LOG(logDEBUG) << "  ==> setting fParNtrig to " << fParNtrig; 
+	setToolTips();
       }
       if (!parName.compare("Vcal")) {
 	fParVcal = atoi(sval.c_str()); 
-	LOG(logINFO) << "  ==> setting fParVcal to " << fParVcal; 
+	LOG(logDEBUG) << "  ==> setting fParVcal to " << fParVcal; 
+	setToolTips();
       }
       break;
     }
@@ -52,13 +54,24 @@ bool PixTestSetup::setParameter(string parName, string sval) {
 
 // ----------------------------------------------------------------------
 void PixTestSetup::init() {
-  LOG(logINFO) << "PixTestSetup::init()";
-  
+  LOG(logDEBUG) << "PixTestSetup::init()";
+
+  setToolTips();
   fDirectory = gFile->GetDirectory(fName.c_str()); 
   if (!fDirectory) {
     fDirectory = gFile->mkdir(fName.c_str()); 
   } 
 
+}
+
+
+// ----------------------------------------------------------------------
+void PixTestSetup::setToolTips() {
+  fTestTip    = string(Form("scan testboard parameter settings and check for valid readout\n")
+		       + string("TO BE IMPLEMENTED!!"))
+    ;
+  fSummaryTip = string("summary plot to be implemented")
+    ;
 }
 
 
@@ -69,8 +82,8 @@ void PixTestSetup::bookHist(string name) {
 
   TH2D *h2(0);
   fHistList.clear();
-  for (int i = 0; i < fPixSetup->getConfigParameters()->getNrocs(); ++i){
-    h2 = new TH2D(Form("Setup_C%d", i), Form("Setup_C%d", i), 52, 0., 52., 80, 0., 80.); 
+  for (unsigned int i = 0; i < fPixSetup->getConfigParameters()->getNrocs(); ++i){
+    h2 = new TH2D(Form("Setup_%s_C%d", name.c_str(), i), Form("Setup_%s_C%d", name.c_str(), i), 52, 0., 52., 80, 0., 80.); 
     h2->SetMinimum(0.); 
     setTitles(h2, "col", "row"); 
     fHistList.push_back(h2); 
@@ -82,11 +95,11 @@ void PixTestSetup::bookHist(string name) {
 
 //----------------------------------------------------------
 PixTestSetup::~PixTestSetup() {
-  LOG(logINFO) << "PixTestSetup dtor";
+  LOG(logDEBUG) << "PixTestSetup dtor";
   std::list<TH1*>::iterator il; 
   fDirectory->cd(); 
   for (il = fHistList.begin(); il != fHistList.end(); ++il) {
-    LOG(logINFO) << "Write out " << (*il)->GetName();
+    LOG(logDEBUG) << "Write out " << (*il)->GetName();
     (*il)->SetDirectory(fDirectory); 
     (*il)->Write(); 
   }
@@ -95,7 +108,6 @@ PixTestSetup::~PixTestSetup() {
 
 // ----------------------------------------------------------------------
 void PixTestSetup::doTest() {
-  cout << "PixTab::update()" << endl;
   LOG(logINFO) << "PixTestSetup::doTest() ntrig = " << fParNtrig;
   //FIXME clearHist(); 
 
@@ -126,9 +138,9 @@ void PixTestSetup::doTest() {
       
       for (vector<pixel>::iterator mapit = mapdata.begin(); mapit != mapdata.end(); ++mapit) {
 	if (mapit->value > 0) {
-	  cout << "**********************************************************************" << endl;
-	  cout << "Px col/row: " << (int)mapit->column << "/" << (int)mapit->row << " has efficiency " 
-	       << (int)mapit->value << "/" << fParNtrig << " = " << (mapit->value/fParNtrig) << endl;
+// 	  cout << "**********************************************************************" << endl;
+// 	  cout << "Px col/row: " << (int)mapit->column << "/" << (int)mapit->row << " has efficiency " 
+// 	       << (int)mapit->value << "/" << fParNtrig << " = " << (mapit->value/fParNtrig) << endl;
 	  break;
 	}
       }

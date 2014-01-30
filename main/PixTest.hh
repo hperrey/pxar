@@ -25,6 +25,9 @@ public:
   virtual ~PixTest();
   void init(PixSetup *, std::string name);
   void bookHist(std::string name);
+  virtual void setToolTips();
+  virtual std::string getSummaryTip() {return fSummaryTip;}
+  virtual std::string getTestTip() {return fTestTip;}
 
   int pixelThreshold(string dac, int ntrig, int dacmin, int dacmax);
   std::vector<TH2D*> efficiencyMaps(std::string name, int ntrig = 10); 
@@ -38,11 +41,16 @@ public:
   void cache(std::string dacname); 
   void restore(std::string dacname); 
 
+  TH2D* moduleMap(std::string histname); 
+  void fillMap(TH2D *hmod, TH2D *hroc, int iroc); 
+
   void clearHist(); 
   virtual void doTest(); 
   virtual void doAnalysis();
   
+  
   std::string getName() {return fName; }
+  void resetDirectory();
   std::map<std::string, std::string> getParameters() {return fParameters;} 
   bool getParameter(std::string parName, int &); 
   bool getParameter(std::string parName, float &); 
@@ -67,7 +75,7 @@ protected:
 
   double               fThreshold, fThresholdE, fSigma, fSigmaE; 
 
-  std::string           fName; 
+  std::string           fName, fTestTip, fSummaryTip; 
 
   std::map<std::string, std::string> fParameters;
 

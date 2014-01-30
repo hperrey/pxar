@@ -13,8 +13,9 @@ PixSetup::PixSetup(api *a, PixTestParameters *tp, ConfigParameters *cp, SysComma
   fPixTestParameters = tp; 
   fConfigParameters  = cp; 
   fSysCommand        = sc; 
+  fDoAnalysisOnly    = false; 
   init(); 
-  LOG(logINFO) << "PixSetup ctor(pxar::api *a, PixTestParameters *tp, ConfigParameters *cp, SysCommand *sc)";
+  LOG(logDEBUG) << "PixSetup ctor(pxar::api *a, PixTestParameters *tp, ConfigParameters *cp, SysCommand *sc)";
 }
 
 // ----------------------------------------------------------------------
@@ -24,7 +25,7 @@ PixSetup::PixSetup() {
   fConfigParameters  = 0; 
   fSysCommand        = 0; 
   init(); 
-  LOG(logINFO) << "PixSetup ctor()";
+  LOG(logDEBUG) << "PixSetup ctor()";
 }
 
 // ----------------------------------------------------------------------
@@ -34,6 +35,6 @@ PixSetup::~PixSetup() {
 
 // ----------------------------------------------------------------------
 void PixSetup::init() {
-  LOG(logINFO) << "PixSetup init";
+  LOG(logDEBUG) << "PixSetup init";
 }
 

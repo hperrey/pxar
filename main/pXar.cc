@@ -7,6 +7,7 @@
 
 #include <TApplication.h> 
 #include <TFile.h> 
+#include <TROOT.h> 
 
 #include "SysCommand.hh"
 #include "ConfigParameters.hh"
@@ -48,10 +49,15 @@ int main(int argc, char *argv[]){
 
   // -- command line arguments
   string dir("."), cmdFile("cal.sys"), rootfile("nada.root"), verbosity("INFO"), flashFile("nada"); 
-  bool doRunGui(false), doRunScript(false), noAPI(false), doUpdateFlash(false);
+  bool doRunGui(false), 
+    doRunScript(false), 
+    noAPI(false), 
+    doUpdateFlash(false),
+    doAnalysisOnly(false);
   for (int i = 0; i < argc; i++){
     if (!strcmp(argv[i],"-h")) {
       cout << "List of arguments:" << endl;
+      cout << "-a                    do not do tests, do not recreate rootfile, but read in existing rootfile" << endl;
       cout << "-c filename           read in commands from filename" << endl;
       cout << "-d [--dir] path       directory with config files" << endl;
       cout << "-g                    start with GUI" << endl;
@@ -60,6 +66,7 @@ int main(int argc, char *argv[]){
       cout << "-v verbositylevel     set verbosity level: QUIET CRITICAL ERROR WARNING DEBUG DEBUGAPI DEBUGHAL ..." << endl;
       return 0;
     }
+    if (!strcmp(argv[i],"-a"))                                {doAnalysisOnly = true;} 
     if (!strcmp(argv[i],"-c"))                                {cmdFile    = string(argv[++i]); doRunScript = true;} 
     if (!strcmp(argv[i],"-d") || !strcmp(argv[i],"--dir"))    {dir  = string(argv[++i]); }               
     if (!strcmp(argv[i],"-f"))                                {doUpdateFlash = true; flashFile = string(argv[++i]);} 
@@ -67,6 +74,13 @@ int main(int argc, char *argv[]){
     if (!strcmp(argv[i],"-n"))                                {noAPI   = true; } 
     if (!strcmp(argv[i],"-r"))                                {rootfile  = string(argv[++i]); }               
     if (!strcmp(argv[i],"-v"))                                {verbosity  = string(argv[++i]); }               
+  }
+
+  struct stat buffer;   
+  if (stat("./rootlogon.C", &buffer) == 0) {
+    gROOT->ProcessLine(".x ./rootlogon.C;");
+  } else {
+    LOG(logINFO) << "no ./rootlogon.C found, live with the defaults provided";
   }
 
   pxar::api *api(0);
@@ -90,20 +104,23 @@ int main(int argc, char *argv[]){
   LOG(logINFO) << "pxar: reading config parameters from " << cfgFile;
   if (!configParameters->readConfigParameterFile(cfgFile)) return 1;
 
-  if (!rootfile.compare("nada.root")) rootfile = configParameters->getRootFileName();
-  LOG(logINFO)<< "pxar: dumping results into " << rootfile;
-  TFile *rfile = TFile::Open(rootfile.c_str(), "RECREATE"); 
+  if (!rootfile.compare("nada.root")) {
+    rootfile = configParameters->getDirectory() + "/" + configParameters->getRootFileName();
+  } else {
+    configParameters->setRootFileName(rootfile); 
+    rootfile  = configParameters->getDirectory() + "/" + rootfile;
+  }
   
   vector<vector<pair<string,uint8_t> > >       rocDACs = configParameters->getRocDacs(); 
   vector<vector<pair<string,uint8_t> > >       tbmDACs = configParameters->getTbmDacs(); 
-  std::vector<std::vector<pxar::pixelConfig> > rocPixels = configParameters->getRocPixelConfig();
+  vector<vector<pixelConfig> >                 rocPixels = configParameters->getRocPixelConfig();
+  vector<pair<string,uint8_t> >                sig_delays = configParameters->getTbSigDelays(); 
+  vector<pair<string, double> >                power_settings = configParameters->getTbPowerSettings();
+  vector<pair<uint16_t, uint8_t> >             pg_setup = configParameters->getTbPgSettings();
 
   if (!noAPI) {
     try {
       api = new pxar::api("*", verbosity);
-      std::vector<std::pair<std::string,uint8_t> > sig_delays = configParameters->getTbSigDelays(); 
-      std::vector<std::pair<std::string, double> > power_settings = configParameters->getTbPowerSettings();
-      std::vector<std::pair<uint16_t, uint8_t> > pg_setup = configParameters->getTbPgSettings();
 
       api->initTestboard(sig_delays, power_settings, pg_setup);
       api->initDUT(configParameters->getTbmType(), tbmDACs, 
@@ -119,9 +136,17 @@ int main(int argc, char *argv[]){
     }
   }
 
-  PixTestParameters *ptp = new PixTestParameters(configParameters->getTestParametersFileName()); 
+  PixTestParameters *ptp = new PixTestParameters(configParameters->getDirectory() + "/" + configParameters->getTestParameterFileName()); 
   SysCommand sysCommand;
   PixSetup a(api, ptp, configParameters, &sysCommand);  
+
+  LOG(logINFO)<< "pxar: dumping results into " << rootfile;
+  TFile *rfile(0); 
+  if (doAnalysisOnly) {
+    rfile = TFile::Open(rootfile.c_str(), "UPDATE"); 
+  } else {
+    rfile = TFile::Open(rootfile.c_str(), "RECREATE"); 
+  }
 
   if (doRunGui) {
     runGui(a, argc, argv); 
@@ -138,8 +163,7 @@ int main(int argc, char *argv[]){
 
   LOG(logINFO) << "closing down 1";
   
-  // -- clean exit
-
+  // -- clean exit (however, you should not get here)
   rfile->Write(); 
   rfile->Close(); 
   
@@ -149,7 +173,7 @@ int main(int argc, char *argv[]){
     delete api;
   }
 
-  LOG(logINFO) << "pixar: this is the end, my friend";
+  LOG(logINFO) << "pXar: this is the end, my friend";
 
   return 0;
 }

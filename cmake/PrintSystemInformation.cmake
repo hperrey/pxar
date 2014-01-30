@@ -2,7 +2,7 @@
 #
 # if you are building in-source, this is the same as CMAKE_SOURCE_DIR, otherwise 
 # this is the top level directory of your build tree 
-MESSAGE( STATUS "CMAKE_BINARY_DIR:         " ${CMAKE_BINARY_DIR} )
+MESSAGE( STATUS "CMAKE_BINARY_DIR: " ${CMAKE_BINARY_DIR} )
 
 # contains the full path to the root of your project source directory,
 # i.e. to the nearest directory where CMakeLists.txt contains the PROJECT() command 
@@ -12,7 +12,7 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
   exec_program(lsb_release ARGS "--description -s" OUTPUT_VARIABLE _linux_dist)
 endif()
  
-MESSAGE( STATUS "This is CMake " ${CMAKE_VERSION} " (" ${CMAKE_COMMAND}") running on " ${CMAKE_SYSTEM_NAME} " (" ${CMAKE_SYSTEM_VERSION} " " ${_linux_dist} ")")
+MESSAGE( STATUS "This is CMake " ${CMAKE_VERSION} " (" ${CMAKE_COMMAND} ") running on " ${CMAKE_SYSTEM_NAME} " (" ${CMAKE_SYSTEM_VERSION} " " ${_linux_dist} ")")
 
 # determine compiler type (32/64bit)
 if( CMAKE_SIZEOF_VOID_P EQUAL 8 )

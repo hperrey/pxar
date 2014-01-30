@@ -26,7 +26,6 @@ api::api(std::string usbId, std::string logLevel) {
 
   // Get the DUT up and running:
   _dut = new dut();
-  _dut->_initialized = false;
 }
 
 api::~api() {
@@ -34,7 +33,7 @@ api::~api() {
   delete _hal;
 }
 
-std::string api::getVersion() {return PACKAGE_STRING;};
+std::string api::getVersion() { return PACKAGE_STRING; }
 
 bool api::initTestboard(std::vector<std::pair<std::string,uint8_t> > sig_delays,
                        std::vector<std::pair<std::string,double> > power_settings,
@@ -1063,9 +1062,11 @@ std::vector<pixel> api::getThresholdMap(std::string dacName, uint16_t flags, uin
   return *result;
 }
   
-int32_t api::getReadbackValue(std::string parameterName) {
+int32_t api::getReadbackValue(std::string /*parameterName*/) {
 
   if(!status()) {return -1;}
+  LOG(logCRITICAL) << "NOT IMPLEMENTED YET! (File a bug report if you need this urgently...)";
+  return -1;
 }
 
 
@@ -1119,7 +1120,11 @@ std::vector<uint16_t> api::daqGetBuffer() {
   return data;
 }
 
-std::vector<pixel> api::daqGetEvent() {}
+std::vector<pixel> api::daqGetEvent() {
+  // FIXME: needs to actually interact with the HAL and get DATA
+  LOG(logCRITICAL) << "NOT IMPLEMENTED YET! (File a bug report if you need this urgently...)";
+  return std::vector<pixel>();
+}
 
 bool api::daqStop() {
 
@@ -1410,6 +1415,7 @@ void api::SetCalibrateBits(bool enable) {
   // Run over all existing ROCs:
   for (std::vector<rocConfig>::iterator rocit = _dut->roc.begin(); rocit != _dut->roc.end(); ++rocit) {
 
+    LOG(logDEBUGAPI) << "Configuring calibrate bits in all enabled PUCs of ROC " << static_cast<int>(rocit-_dut->roc.begin());
     // Check if the signal has to be turned on or off:
     if(enable) {
       // Loop over all pixels in this ROC and set the Cal bit:

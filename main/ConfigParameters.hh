@@ -22,15 +22,21 @@ public:
 
   void initialize();
   bool readConfigParameterFile(std::string filename);
+
   bool writeConfigParameterFile();
+  bool writeTrimFiles(std::vector<int>);
+  bool writeDacParameterFiles(std::vector<int>);
+  bool writeTbmParameterFiles(std::vector<int>);
+  bool writeTbParameterFile();
+  bool writeTestParameterFile(std::string test="all");
 
   static ConfigParameters* Singleton();
 
-  std::string getTBParametersFileName()   {return fTBParametersFileName;}
-  std::string getDACParametersFileName()  {return fDACParametersFileName;}
-  std::string getTbmParametersFileName()  {return fTbmParametersFileName;}
-  std::string getTrimParametersFileName() {return fTrimParametersFileName;}
-  std::string getTestParametersFileName() {return fTestParametersFileName;}
+  std::string getTBParameterFileName()    {return fTBParametersFileName;}
+  std::string getDACParameterFileName()   {return fDACParametersFileName;}
+  std::string getTbmParameterFileName()   {return fTbmParametersFileName;}
+  std::string getTrimParameterFileName()  {return fTrimParametersFileName;}
+  std::string getTestParameterFileName()  {return fTestParametersFileName;}
   std::string getRootFileName()           {return fRootFileName;}
   std::string getLogFileName()            {return fLogFileName;}
   std::string getMaskFileName()           {return fMaskFileName;}
@@ -53,26 +59,27 @@ public:
   bool setTbParameter(std::string, uint8_t);
   bool setTbPowerSettings(std::string, double);
 
-  void setTBParameterFileName(const std::string &filename);
-  void setDACParameterFileName(const std::string &filename);
-  void setTbmParameterFileName(const std::string &filename);
-  void setTrimParameterFileName(const std::string &filename);
-  void setTestParameterFileName(const std::string &filename);
-  void setRootFileName(const std::string &filename);
-  void setLogFileName(const std::string &filename);
-  void setDebugFileName(const std::string &filename);
-  void setMaskFileName(const std::string &filename);
-  void setDirectory(std::string &s);
+  void setTBParameterFileName(std::string filename) {fTBParametersFileName = filename;}
+  void setDACParameterFileName(std::string filename) {fDACParametersFileName = filename;}
+  void setTbmParameterFileName(std::string filename) {fTbmParametersFileName = filename;}
+  void setTrimParameterFileName(std::string filename) {fTrimParametersFileName = filename;}
+  void setTestParameterFileName(std::string filename) {fTestParametersFileName = filename;}
+  void setRootFileName(std::string filename) {fRootFileName = filename;}
+  void setLogFileName(std::string filename) {fLogFileName = filename;}
+  void setDebugFileName(std::string filename) {fMaskFileName = filename;}
+  void setMaskFileName(std::string filename) {fDebugFileName = filename;}
+  void setDirectory(std::string dirname) {fDirectory = dirname;}
 
   void setGuiMode(bool a) {fGuiMode = a;}
 
-  int getNrocs() {return fnRocs;}
-  int getNtbms() {return fnTbms;}
+  unsigned int getNrocs() {return fnRocs;}
+  unsigned int getNtbms() {return fnTbms;}
 
   double getIa() {return ia;}
   double getId() {return id;}
   double getVa() {return va;}
   double getVd() {return vd;}
+  bool   getHvOn() {return fHvOn;}
 
 private:
 
@@ -83,8 +90,8 @@ private:
   std::vector<std::vector<std::pair<std::string, uint8_t> > > fTbmParameters, fDacParameters; 
   std::vector<std::vector<pxar::pixelConfig> > fRocPixelConfigs; 
 
-  int fnCol, fnRow, fnRocs, fnTbms, fnModules, fHubId, fDataTriggerLevel, fHalfModule;
-  int fCustomModule;
+  unsigned int fnCol, fnRow, fnRocs, fnTbms, fnModules, fHubId;
+  int fCustomModule, fHalfModule;
   int fEmptyReadoutLength, fEmptyReadoutLengthADC, fEmptyReadoutLengthADCDual, fTbmChannel;
   float ia, id, va, vd;
   float rocZeroAnalogCurrent;
